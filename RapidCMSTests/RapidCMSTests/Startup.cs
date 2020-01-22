@@ -30,7 +30,7 @@ namespace RapidCMSTests
             services.AddDbContext<TestDbContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("Db"));
-            }, ServiceLifetime.Transient);
+            }, ServiceLifetime.Transient, ServiceLifetime.Transient);
 
             services.AddTransient<PersonRepository>();
             services.AddTransient<CountryRepository>();
@@ -68,29 +68,25 @@ namespace RapidCMSTests
                         {
                             section.AddField(x => x.Name);
 
-                            section.AddRelatedCollectionList<CountryCmsModel>("countriesforpeople");
-                        });
-                    });
-                });
+                            section.AddRelatedCollectionList<CountryCmsModel, CountryRepository>(list =>
+                            {
+                                list.SetListEditor(editor =>
+                                {
+                                    editor.AddDefaultButton(DefaultButtonType.New);
+                                    editor.AddDefaultButton(DefaultButtonType.Add);
+                                    editor.AddDefaultButton(DefaultButtonType.Return);
 
-                config.AddCollection<CountryCmsModel, CountryRepository>("countriesforpeople", "Countries for People", countries =>
-                {
-                    countries.SetTreeView(EntityVisibilty.Hidden, CollectionRootVisibility.Hidden);
+                                    editor.AddSection(row =>
+                                    {
+                                        row.AddDefaultButton(DefaultButtonType.SaveExisting);
+                                        row.AddDefaultButton(DefaultButtonType.SaveNew);
+                                        row.AddDefaultButton(DefaultButtonType.Pick);
+                                        row.AddDefaultButton(DefaultButtonType.Remove);
 
-                    countries.SetListEditor(view =>
-                    {
-                        view.AddDefaultButton(DefaultButtonType.New);
-                        view.AddDefaultButton(DefaultButtonType.Add);
-                        view.AddDefaultButton(DefaultButtonType.Return);
-
-                        view.AddSection(row =>
-                        {
-                            row.AddDefaultButton(DefaultButtonType.SaveExisting);
-                            row.AddDefaultButton(DefaultButtonType.SaveNew);
-                            row.AddDefaultButton(DefaultButtonType.Pick);
-                            row.AddDefaultButton(DefaultButtonType.Remove);
-
-                            row.AddField(x => x.Name);
+                                        row.AddField(x => x.Name);
+                                    });
+                                });
+                            });
                         });
                     });
                 });

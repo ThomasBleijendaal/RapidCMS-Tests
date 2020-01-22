@@ -12,6 +12,7 @@ namespace RapidCMSTests.EFCore
 
         public DbSet<Person> People { get; set; }
         public DbSet<Country> Countries { get; set; }
+        public DbSet<PersonCountry> PersonCountry { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

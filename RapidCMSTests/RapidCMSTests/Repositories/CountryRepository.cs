@@ -131,5 +131,41 @@ namespace RapidCMSTests.Repositories
 
             return results.Take(query.Take).Select(x => (CountryCmsModel)x);
         }
+
+        public override async Task AddAsync(IRelated related, string id)
+        {
+            if (related.Entity is PersonCmsModel person && int.TryParse(person.Id, out var personId) && int.TryParse(id, out var countryId))
+            {
+                _dbContext.PersonCountry.Add(new PersonCountry
+                {
+                    CountryId = countryId,
+                    PersonId = personId
+                });
+
+                await _dbContext.SaveChangesAsync();
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
+        }
+
+        public override async Task RemoveAsync(IRelated related, string id)
+        {
+            if (related.Entity is PersonCmsModel person && int.TryParse(person.Id, out var personId) && int.TryParse(id, out var countryId))
+            {
+                _dbContext.PersonCountry.Remove(new PersonCountry
+                {
+                    CountryId = countryId,
+                    PersonId = personId
+                });
+
+                await _dbContext.SaveChangesAsync();
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
+        }
     }
 }
