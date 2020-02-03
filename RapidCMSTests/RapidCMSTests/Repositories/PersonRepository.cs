@@ -41,11 +41,7 @@ namespace RapidCMSTests.Repositories
                 queryable = queryable.Where(x => x.Name.Contains(query.SearchTerm));
             }
 
-            if (query.DataViewExpression != null)
-            {
-                queryable = queryable.Where(query.DataViewExpression);
-            }
-
+            queryable = query.ApplyDataView(queryable);
             queryable = query.ApplyOrder(queryable).Skip(query.Skip).Take(query.Take + 1);
 
             var results = await queryable.ToListAsync();

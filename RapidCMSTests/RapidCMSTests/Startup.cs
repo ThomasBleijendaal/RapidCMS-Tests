@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Azure.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +35,10 @@ namespace RapidCMSTests
 
             services.AddTransient<PersonRepository>();
             services.AddTransient<CountryRepository>();
+
+            services.AddSingleton(CloudStorageAccount.DevelopmentStorageAccount);
+            services.AddScoped<ContainerRepository>();
+            services.AddScoped<BlobRepository>();
 
             services.AddRapidCMS(config =>
             {
@@ -119,6 +124,51 @@ namespace RapidCMSTests
                             section.AddField(x => x.Name);
                         });
                     });
+                });
+
+                config.AddCollection<BlobContainerCmsModel, ContainerRepository>("containers", "Blob Containers", config =>
+                {
+                    config
+                        .SetTreeView(x => x.Name)
+                        .SetListEditor(editor =>
+                        {
+                            editor.AddDefaultButton(DefaultButtonType.New);
+                            editor.SetPageSize(10);
+
+                            editor.AddSection(section =>
+                            {
+                                section.AddDefaultButton(DefaultButtonType.SaveNew);
+                                section.AddDefaultButton(DefaultButtonType.Edit);
+
+                                section.AddField(x => x.Name)
+                                    .DisableWhen((entity, state) => state == RapidCMS.Core.Enums.EntityState.IsExisting);
+                            });
+                        });
+
+                    config
+                        .SetNodeEditor(editor =>
+                        {
+                            editor.AddSection(section =>
+                            {
+                                section.AddSubCollectionList<BlobItemCmsModel, BlobRepository>(blobs =>
+                                {
+                                    blobs.SetListEditor(editor =>
+                                    {
+                                        editor.AddDefaultButton(DefaultButtonType.New);
+
+                                        editor.AddSection(section =>
+                                        {
+                                            section.AddDefaultButton(DefaultButtonType.SaveNew);
+                                            section.AddDefaultButton(DefaultButtonType.Edit);
+
+                                            section.AddField(x => x.Name)
+                                                .DisableWhen((entity, state) => state == RapidCMS.Core.Enums.EntityState.IsExisting);
+
+                                        });
+                                    });
+                                });
+                            });
+                        });
                 });
             });
         }
